@@ -1,0 +1,189 @@
+---
+title: "Scoring Functions"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Scoring Functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(message=FALSE, collapse = TRUE, comment="")
+library(SummarizedExperiment)
+library(CaDrA)
+```
+
+The **CaDrA** package currently provides four scoring functions to search for subsets of genomic features that are likely associated with a specific outcome of interest (e.g., protein expression, pathway activity, etc.)
+
+1. Kolmogorov-Smirnov Method (`ks`)
+2. Conditional Mutual Information Method (`revealer`)
+3. Wilcoxon Rank-Sum Method (`wilcox`)
+4. Custom - An User's Provided Scoring Function (`custom`)
+
+Below, we run `candidate_search()` over the top 3 starting features using each of the four scoring functions described above.
+
+**Important Note:**
+
+- The legacy function `topn_eval()` is equivalent to the recommended `candidate_search()` function
+
+# Load packages
+
+```r
+library(CaDrA)
+```
+
+# Load required datasets
+
+1. A `binary features matrix` also known as `Feature Set` (such as somatic mutations, copy number alterations, chromosomal translocations, etc.) The 1/0 row vectors indicate the presence/absence of ‘omics’ features in the samples. The `Feature Set` must be an object of class **SummarizedExperiment** from **SummarizedExperiment** package) 
+2. A vector of continuous scores (or `input_score`) representing a functional response of interest (such as protein expression, pathway activity, etc.)
+
+```{r load.data}
+
+# Load pre-computed feature set
+data(sim_FS)
+ 
+# Load pre-computed input scores
+data(sim_Scores)
+
+```
+
+# Kolmogorov-Smirnov scoring method 
+
+See `?ks_rowscore` for more details
+
+```{r ks.method}
+
+ks_topn_l <- CaDrA::candidate_search(
+  FS = sim_FS,
+  input_score = sim_Scores,
+  method = "ks_pval",          # Use Kolmogorow-Smirnow scoring function 
+  weight = NULL,               # If weight is provided, perform a weighted-KS test
+  alternative = "less",        # Use one-sided hypothesis testing
+  search_method = "both",      # Apply both forward and backward search
+  top_N = 3,                   # Evaluate top 3 starting points for the search
+  max_size = 7,                # Allow at most 7 features in meta-feature matrix
+  do_plot = FALSE,             # We will plot it AFTER finding the best hits
+  best_score_only = FALSE      # Return meta-feature, its observed input scores and corresponding best score
+)
+
+# Now we can fetch the feature set of top N features that corresponded to the best scores over the top N search
+ks_topn_best_meta <- topn_best(ks_topn_l)
+
+# Visualize best meta-feature result
+meta_plot(topn_best_list = ks_topn_best_meta)
+
+```
+
+# Wilcoxon Rank-Sum scoring method 
+
+See `?wilcox_rowscore` for more details
+
+```{r wilcox.method}
+
+wilcox_topn_l <- CaDrA::candidate_search(
+  FS = sim_FS,
+  input_score = sim_Scores,
+  method = "wilcox_pval",      # Use Wilcoxon Rank-Sum scoring function
+  alternative = "less",        # Use one-sided hypothesis testing
+  search_method = "both",      # Apply both forward and backward search
+  top_N = 3,                   # Evaluate top 3 starting points for the search
+  max_size = 7,                # Allow at most 7 features in meta-feature matrix
+  do_plot = FALSE,             # We will plot it AFTER finding the best hits
+  best_score_only = FALSE      # Return meta-feature, its observed input scores and corresponding best score
+)
+
+# Now we can fetch the feature set of top N feature that corresponded to the best scores over the top N search
+wilcox_topn_best_meta <- topn_best(topn_list = wilcox_topn_l)
+
+# Visualize best meta-feature result
+meta_plot(topn_best_list = wilcox_topn_best_meta)
+
+```
+
+# Conditional Mutual Information scoring method 
+
+See `?revealer_rowscore` for more details
+
+```{r revealer.method}
+
+revealer_topn_l <- CaDrA::candidate_search(
+  FS = sim_FS,
+  input_score = sim_Scores,
+  method = "revealer",         # Use REVEALER's CMI scoring function
+  search_method = "both",      # Apply both forward and backward search
+  top_N = 3,                   # Evaluate top 3 starting points for the search
+  max_size = 7,                # Allow at most 7 features in meta-feature matrix
+  do_plot = FALSE,             # We will plot it AFTER finding the best hits
+  best_score_only = FALSE      # Return meta-feature, its observed input scores and corresponding best score
+)
+
+# Now we can fetch the ESet of top feature that corresponded to the best scores over the top N search
+revealer_topn_best_meta <- topn_best(topn_list = revealer_topn_l)
+
+# Visualize best meta-feature result
+meta_plot(topn_best_list = revealer_topn_best_meta)
+
+```
+
+# Custom - An user's provided scoring method
+
+See `?custom_rowscore` for more details
+
+```{r custom.method}
+
+# A customized function using ks-test function
+customized_rowscore <- function(FS_mat, input_score, alternative){
+  
+  ks <- apply(FS_mat, 1, function(r){ 
+    x = input_score[which(r==1)]; 
+    y = input_score[which(r==0)];
+    res <- ks.test(x, y, alternative=alternative)
+    return(c(res$statistic, res$p.value))
+  })
+  
+   # Obtain score statistics and p-values from KS method
+  stat <- ks[1,]
+  pval <- ks[2,]
+  
+  # Compute the -log scores for pval
+  scores <- -log(pval)
+  names(scores) <- rownames(FS_mat)
+  
+  # Re-order FS in a decreasing order (from most to least significant)
+  # This comes in handy when doing the top-N evaluation of
+  # the top N 'best' features
+  scores <- scores[order(scores, decreasing=TRUE)]
+  
+  return(scores)
+  
+}
+
+# Search for best features using a custom-defined function
+custom_topn_l <- CaDrA::candidate_search(
+  FS = sim_FS,
+  input_score = sim_Scores,
+  method = "custom",                                # Use custom scoring function
+  custom_function = customized_rowscore,            # Use a customized scoring function
+  custom_parameters = list(alternative = "less"),   # Additional parameters to pass to custom_function
+  search_method = "both",                           # Apply both forward and backward search
+  top_N = 3,                                        # Evaluate top 3 starting points for the search
+  max_size = 7,                                     # Allow at most 7 features in meta-feature matrix
+  do_plot = FALSE,                                  # We will plot it AFTER finding the best hits
+  best_score_only = FALSE                           # Return meta-feature, its observed input scores and corresponding best score
+)
+
+# Now we can fetch the feature set of top N feature that corresponded to the best scores over the top N search
+custom_topn_best_meta <- topn_best(topn_list = custom_topn_l)
+
+# Visualize best meta-feature result
+meta_plot(topn_best_list = custom_topn_best_meta)
+
+```
+
+# SessionInfo
+
+```{r RsessionInfo}
+sessionInfo()
+```
+
+

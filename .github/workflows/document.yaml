@@ -43,6 +43,10 @@ jobs:
           
       - name: Document
         run: roxygen2::roxygenise()
+        env:
+          _R_CHECK_FORCE_SUGGESTS_: false
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+          DISPLAY: 99.0
         shell: Rscript {0}
         
       - name: Commit and push changes

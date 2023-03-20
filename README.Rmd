@@ -4,7 +4,7 @@ output: rmarkdown::github_document
 title: CaDrA
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.Rmd. Please edit the this Rmd file -->
 
 ```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(fig.path="./man/figures/", message=FALSE, collapse = TRUE, comment="")
@@ -12,10 +12,9 @@ library(SummarizedExperiment)
 library(CaDrA)
 ```
 
-<!-- badges: start -->
-<!-- [![R-CMD-check](https://github.com/montilab/CaDrA/workflows/R-CMD-check/badge.svg)](https://github.com/montilab/CaDrA/actions) -->
-<!-- badges: end -->
-  
+[![R-CMD-CHECK](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml/badge.svg)](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml)
+[![R-CMD-CHECK](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml/badge.svg)](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml)
+
 Candidate Drivers Analysis: Multi-Omic Search for Candidate Drivers of Functional Signatures
 
 **CaDrA** is an R package that supports a heuristic search framework aimed at identifying candidate drivers of a molecular phenotype of interest. 

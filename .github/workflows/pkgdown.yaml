@@ -26,17 +26,13 @@ permissions:
 name: pkgdown
 
 jobs:
-  setup:
+  build:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      
-  build:
-    needs: setup
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 

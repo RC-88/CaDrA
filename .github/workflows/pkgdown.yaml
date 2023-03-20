@@ -32,6 +32,7 @@ jobs:
     # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' }}
+      cancel-in-progress: true
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -42,6 +43,19 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
+          
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
+
+      - name: Run R-CMD-CHECK
+        if: github.event_name != 'pull_request'
+        uses: r-lib/actions/check-r-package@v2
+        env:
+          _R_CHECK_FORCE_SUGGESTS_: false
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+          DISPLAY: 99.0
     
       - name: Install rmarkdown
         run: Rscript -e 'install.packages("rmarkdown")'
@@ -49,11 +63,11 @@ jobs:
       - name: Render README
         run: Rscript -e 'rmarkdown::render("README.Rmd", output_format="md_document")'
         
-      - name: commit rendered README
+      - name: Commit rendered README
         run: |
           git add README.md man/figures/README-*
-          git commit -m "Re-build README.md" || echo "No changes to commit"
-          git push origin master || echo "No changes to commit"
+          git commit -m "Re-build README.md"
+          git push origin master
   
   pkgdown:
     needs: build

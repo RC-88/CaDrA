@@ -13,7 +13,8 @@ library(CaDrA)
 ```
 
 [![R-CMD-CHECK](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml/badge.svg)](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml)
-  
+[![R-CMD-CHECK](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml/badge.svg)](https://github.com/RC-88/CaDrA/actions/workflows/R-CMD-CHECK.yaml)
+
 Candidate Drivers Analysis: Multi-Omic Search for Candidate Drivers of Functional Signatures
 
 **CaDrA** is an R package that supports a heuristic search framework aimed at identifying candidate drivers of a molecular phenotype of interest. 

@@ -4,6 +4,7 @@ on:
   push:
     branches: master
     paths: 
+      - '.github/workflows/pkgdown.yaml'
       - 'R/**'
       - 'vignettes/**'
       - 'man/**'

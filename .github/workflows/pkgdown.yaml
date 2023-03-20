@@ -6,14 +6,12 @@ on:
     paths: 
       - '.github/workflows/pkgdown.yaml'
       - 'vignettes/**'
-      - 'man/**'
+      - 'man/**.Rd'
       - 'README.md'
       - 'DESCRIPTION'
       - 'LICENSE'      
       - 'NEWS.md'
       - '_pkgdown.yml'
-    paths-ignore:
-      - 'man/figures/**'
   pull_request:
     branches: master
   release:

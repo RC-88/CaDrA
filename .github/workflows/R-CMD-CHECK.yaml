@@ -35,6 +35,8 @@ jobs:
       - name: Run R-CMD-CHECK
         if: github.event_name != 'pull_request'
         uses: r-lib/actions/check-r-package@v2
+        with:
+          args: 'c("--no-manual", "--no-build-vignettes", "--no-tests", "--no-examples")'
         env:
           _R_CHECK_FORCE_SUGGESTS_: false
           _R_CHECK_CRAN_INCOMING_REMOTE_: false

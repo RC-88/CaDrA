@@ -3,6 +3,14 @@
 on:
   push:
     branches: master
+    paths: 
+      - 'R/**'
+      - 'vignettes/**'
+      - 'man/**'
+      - 'README.Rmd'
+      - 'DESCRIPTION'
+      - 'NEWS.md'
+      - '_pkgdown.yml'
   pull_request:
     branches: master
   release:
@@ -18,13 +26,17 @@ permissions:
 name: pkgdown
 
 jobs:
-  pkgdown:
+  setup:
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -38,7 +50,17 @@ jobs:
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
-
+    
+      - name: Install rmarkdown
+        run: Rscript -e 'install.packages("rmarkdown")'
+        
+      - name: Render README
+        run: Rscript -e 'rmarkdown::render("README.Rmd", output_format="md_document")'
+  
+  pkgdown:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}

@@ -37,7 +37,7 @@ jobs:
         uses: r-lib/actions/check-r-package@v2
         with:
           args: 'c("--no-manual", "--as-cran", "--no-tests", "--no-examples")'
-          buid_args: 'c("--no-manual", "--no-build-vignettes")'
+          build_args: 'c("--no-manual", "--no-build-vignettes")'
         env:
           _R_CHECK_FORCE_SUGGESTS_: false
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
